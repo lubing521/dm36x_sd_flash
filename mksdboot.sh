@@ -1,30 +1,28 @@
 #! /bin/sh
-# Script to create SD card for DM368 plaform.
+# Script to create SD card for DM36x plaform.
 #
-# Author: jiangjinxiong, tongfangcloud Inc.
+# Author: jiangjinxiong
 #
 
-VERSION="0.4"
-#filesysdir="/home/jiangjx/UbuntuShare/filesys"
+VERSION="2.00"
 
 execute ()
 {
-    $* >/dev/null
-    if [ $? -ne 0 ]; then
-        echo
-        echo "ERROR: executing $*"
-        echo
-        exit 1
-    fi
+  $* > /dev/null
+  if [ $? -ne 0 ]; then
+    echo
+    echo "ERROR: executing $*"
+    echo
+    exit 1
+  fi
 }
 
 version ()
 {
   echo
   echo "`basename $1` version $VERSION"
-  echo "Script to create bootable SD card for DM368 IPNC"
+  echo "Script to create bootable SD card for DM36x IPNC"
   echo
-
   exit 0
 }
 
@@ -34,7 +32,7 @@ usage ()
 Usage: `basename $1` [options] <device>
 
 Mandatory options:
-  --device              SD block device node (e.g /dev/sdd)
+  --device              SD block device node (e.g /dev/sdb)
 
 Optional options:
   --version             Print version.
@@ -46,25 +44,23 @@ Optional options:
 # Process command line...
 while [ $# -gt 0 ]; do
   case $1 in
-    --help | -h)
-      usage $0
-      ;;
-    --device) shift; device=$1; shift; ;;
-    --version) version $0;;
+    --help | -h) usage $0;;
+    --version | -v) version $0;;
+    --device  | -d) shift; device=$1; shift; ;;
     *) copy="$copy $1"; shift;;
   esac
 done
 
 test -z $device && usage $0
 
-if [ ! -d $filesysdir ]; then
-   echo "ERROR: $filesysdir does not exist,failed to find rootfs"
-   exit 1;
-fi
+#if [ ! -d $filesysdir ]; then
+#   echo "ERROR: $filesysdir does not exist,failed to find rootfs"
+#   exit 1;
+#fi
  
 if [ ! -b $device ]; then
-   echo "ERROR: $device is not a block device file"
-   exit 1;
+  echo "ERROR: $device is not a block device file"
+  exit 1;
 fi
 
 echo "************************************************************"
@@ -82,8 +78,8 @@ read junk
 source ./dm3xx_sd.config
 
 for i in `ls -1 $device?`; do
- echo "unmounting device '$i'"
- umount $i 2>/dev/null
+  echo "unmounting device '$i'"
+  umount $i 2>/dev/null
 done
 
 execute "dd if=/dev/zero of=$device bs=1024 count=1024"
@@ -119,8 +115,8 @@ fi
 } | sfdisk -D -H 255 -S 63 -C $total_cyln $device
 
 if [ $? -ne 0 ]; then
-    echo ERROR
-    exit 1;
+  echo ERROR
+  exit 1;
 fi
 
 echo "Formating ${device}1 ..."
